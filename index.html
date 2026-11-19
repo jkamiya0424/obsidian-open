@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Obsidian で開く</title>
+<style>
+:root { --bg: #ffffff; --fg: #222222; --sub: #666666; --accent: #6d4ad8; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #1e1e1e; --fg: #dddddd; --sub: #999999; --accent: #8b6cf0; }
+}
+body { background: var(--bg); color: var(--fg); margin: 0; padding: 48px 16px;
+  font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif; text-align: center; }
+a.btn { display: inline-block; padding: 14px 32px; border-radius: 10px; background: var(--accent);
+  color: #ffffff; text-decoration: none; font-weight: 600; }
+p.path { color: var(--sub); font-size: 14px; word-break: break-all; }
+</style>
+</head>
+<body>
+<p><a class="btn" id="open" href="#">Obsidian で開く</a></p>
+<p class="path" id="path"></p>
+<script>
+// チャットのリンク https://.../#<vault からの相対パス> を受け、Obsidian のリンクに渡す中継ページ。
+// パスは # より後ろに載せるので、このページの置き場 (サーバー) には送られない。
+// iPhone・iPad は iCloud の CC vault、Mac は workspace vault で開く (どちらも同じ相対パス)。
+function route() {
+  var raw = location.hash.slice(1);
+  var path;
+  try { path = decodeURIComponent(raw); } catch (e) { path = raw; }
+  var btn = document.getElementById("open");
+  var label = document.getElementById("path");
+  if (!path) {
+    btn.style.display = "none";
+    btn.href = "#";
+    label.textContent = "開くファイルの指定がありません";
+    return;
+  }
+  var ua = navigator.userAgent;
+  var ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  var vault = ios ? "CC" : "workspace";
+  var uri = "obsidian://open?vault=" + encodeURIComponent(vault) + "&file=" + encodeURIComponent(path);
+  btn.style.display = "";
+  btn.href = uri;
+  label.textContent = path;
+  location.href = uri;
+}
+window.addEventListener("hashchange", route);
+route();
+</script>
+</body>
+</html>
